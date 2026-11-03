@@ -114,14 +114,26 @@ while getopts ':bdp:mM:uh' OPT; do
 done
 shift $((optind -1))
 
-# Options may also follow the command (e.g. 'volumectl + 5 -b').
-for arg do
+# Options may also follow the command (e.g. 'volumectl + 5 -b' or
+# 'volumectl show -M focused'). Walk the remaining arguments once, keeping
+# the ones that are not options; n counts the arguments not yet looked at.
+n=$#
+while [ $n -gt 0 ]; do
+	arg=$1
 	shift
+	n=$((n - 1))
 	case "$arg" in
 		-b) allow_boost=true;;
 		-d) dark=1;;
 		-m) dev_type='source';;
 		-u) unmute=true;;
+		-h) help; exit 0;;
+		-M)
+			[ $n -gt 0 ] || die "option requires an argument: -M"
+			monitor=$1
+			shift
+			n=$((n - 1));;
+		-M?*) monitor=${arg#-M};;
 		*) set -- "$@" "$arg";;
 	esac
 done
