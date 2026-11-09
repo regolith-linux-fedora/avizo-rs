@@ -1,3 +1,10 @@
+regolith-avizo (0.1.6+rs1) resolute; urgency=medium
+
+  * Rust port of avizo as of regolith-avizo 0.1.6 (avizo-rs). See README.md
+    for the status and the differences from upstream avizo.
+
+ -- rego-port-bot <339843353+rego-port-bot@users.noreply.github.com>  Mon, 09 Nov 2026 12:00:00 +0000
+
 regolith-avizo (0.1.6) focal; urgency=medium
 
   [ Sivecano ]
