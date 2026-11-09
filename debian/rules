@@ -1,26 +1,31 @@
 #!/usr/bin/make -f
 
-# See debhelper(7) (uncomment to enable).
-# Output every command that modifies files on the build system.
-#export DH_VERBOSE = 1
+# avizo-service and avizo-client are a Rust (Cargo) project, built from the
+# dependencies pinned in Cargo.lock. cargo fetches them unless they were
+# vendored first (see README.md). The helpers, the configuration file and
+# the D-Bus service file are installed as they are.
 
-
-# See FEATURE AREAS in dpkg-buildflags(1).
-#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-
-# See ENVIRONMENT in dpkg-buildflags(1).
-# Package maintainers to append CFLAGS.
-#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
-# Package maintainers to append LDFLAGS.
-#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
-
+DESTDIR := $(CURDIR)/debian/regolith-avizo
 
 %:
 	dh $@
 
+override_dh_auto_clean:
+	rm -rf target
 
-# dh_make generated override targets.
-# This is an example for Cmake (see <https://bugs.debian.org/641051>).
-#override_dh_auto_configure:
-#	dh_auto_configure -- \
-#	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
+override_dh_auto_configure:
+
+override_dh_auto_build:
+	cargo build --release --locked
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	install -D -m 0755 target/release/avizo-service $(DESTDIR)/usr/bin/avizo-service
+	install -D -m 0755 target/release/avizo-client $(DESTDIR)/usr/bin/avizo-client
+	install -D -m 0755 volumectl $(DESTDIR)/usr/bin/volumectl
+	install -D -m 0755 lightctl $(DESTDIR)/usr/bin/lightctl
+	install -D -m 0644 config.ini $(DESTDIR)/etc/xdg/avizo/config.ini
+	install -d $(DESTDIR)/usr/share/dbus-1/services
+	sed 's|@bindir@|/usr/bin|' data/org.danb.avizo.service.service.in \
+		> $(DESTDIR)/usr/share/dbus-1/services/org.danb.avizo.service.service
